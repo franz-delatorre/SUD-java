@@ -1,6 +1,6 @@
 package com.franz.sud.java.game.cartridge.castlevania.elements.item;
 
-public enum ItemType {
+public enum EquipmentType {
     WEAPON {
         @Override
         public String toString() {

@@ -1,10 +1,10 @@
 package com.franz.sud.java.game.platform.components;
 
-import com.franz.sud.java.game.platform.misc.Direction;
+import com.franz.sud.java.game.misc.Direction;
 
 import java.util.EnumMap;
 
-public abstract class Room {
+public class Room {
     private String name;
     private Point point;
     private EnumMap<Direction, Room> adjacentRoom = new EnumMap<>(Direction.class);
@@ -22,6 +22,10 @@ public abstract class Room {
         return name;
     }
 
+    public Room getAdjacentRoom(Direction to) {
+        return adjacentRoom.get(to);
+    }
+
     public void setAdjacentRoom(Direction to, Room room) {
         if (adjacentRoom.get(to) != null) {
             return;
@@ -36,4 +40,7 @@ public abstract class Room {
         }
     }
 
+    public Room clone() {
+        return new Room(name, point);
+    }
 }

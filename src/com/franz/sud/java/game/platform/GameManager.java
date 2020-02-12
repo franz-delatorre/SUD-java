@@ -11,14 +11,12 @@ public class GameManager {
 
     public void startGame() {
         game.init();
-        do {
-            game.start();
-        } while (!game.isFinished());
+        game.start();
 
-        if (game.gameOver()) {
-            System.out.println("Game Over!!");
-        } else {
+        if (game.isFinished()) {
             System.out.println("Congratulations! You completed " + game.getGameName());
+        } else {
+            System.out.println("Game Over!!");
         }
     }
 }

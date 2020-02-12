@@ -1,4 +1,4 @@
-package com.franz.sud.java.game.platform.misc;
+package com.franz.sud.java.game.misc;
 
 public enum Direction {
     NORTH(0, 1) {

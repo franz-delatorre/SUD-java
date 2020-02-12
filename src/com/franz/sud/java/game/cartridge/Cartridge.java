@@ -4,6 +4,5 @@ public interface Cartridge {
     void init();
     void start();
     boolean isFinished();
-    boolean gameOver();
     String getGameName();
 }

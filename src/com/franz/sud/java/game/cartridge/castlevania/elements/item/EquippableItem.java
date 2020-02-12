@@ -1,30 +1,63 @@
 package com.franz.sud.java.game.cartridge.castlevania.elements.item;
 
-import com.franz.sud.java.game.cartridge.castlevania.elements.stats.GameStats;
+import com.franz.sud.java.game.cartridge.castlevania.elements.unit.Hero;
+import com.franz.sud.java.game.cartridge.castlevania.helper.StatHelper;
 
-public class EquippableItem extends UseableItem {
+public class EquippableItem extends AttributedItem {
     private boolean isEquipped;
-    private ItemType itemType;
+    private EquipmentType equipmentType;
+    private boolean isPickedUp;
 
-    public EquippableItem(String name, boolean used, int damage, GameStats stats) {
-        super(name, used, damage, stats);
+    public static class Builder extends AttributedItem.Builder<Builder> {
+        private EquipmentType equipmentType;
+
+        public Builder(String name) {
+            super(name);
+        }
+
+        public Builder equipmentType(EquipmentType e) {
+            equipmentType = e;
+            return self();
+        }
+
+        @Override
+        public EquippableItem build() {
+            return new EquippableItem(this);
+        }
+
+        @Override
+        protected Builder self() {
+            return this;
+        }
+    }
+
+    private EquippableItem(Builder builder) {
+        super(builder);
         isEquipped = false;
+        equipmentType = builder.equipmentType;
+        isPickedUp = false;
     }
 
     @Override
-    public void useItem() {
-        equip();
-    }
-
-    public void equip() {
+    public void useItem(Hero hero) {
+        StatHelper.increaseStats(hero.getUnitStats(), itemStats);
         isEquipped = true;
     }
 
-    public void unequip() {
+    public void unequip(Hero hero) {
+        StatHelper.decreaseStats(hero.getUnitStats(), itemStats);
         isEquipped = false;
     }
 
-    public ItemType getItemType() {
-        return itemType;
+    public void setPickedUp() {
+        isPickedUp = true;
+    }
+
+    public boolean isPickedUp() {
+        return isPickedUp;
+    }
+
+    public EquipmentType getEquipmentType() {
+        return equipmentType;
     }
 }

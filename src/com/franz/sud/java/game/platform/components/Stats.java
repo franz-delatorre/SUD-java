@@ -1,8 +1,8 @@
 package com.franz.sud.java.game.platform.components;
 
 public abstract class Stats {
-    public String name;
-    public int statValue;
+    private String name;
+    protected int statValue;
 
     public Stats(int statValue) {
         this.statValue = statValue;
