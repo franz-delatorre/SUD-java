@@ -17,7 +17,8 @@ public abstract class Skill {
     }
 
     public void decrementCooldown() {
-        cooldown--;
+        if (cooldown > 0)
+            cooldown--;
     }
 
     public void setCooldown(int cooldown) {

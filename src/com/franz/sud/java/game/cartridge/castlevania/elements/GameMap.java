@@ -8,13 +8,13 @@ import com.franz.sud.java.game.platform.components.Room;
 import java.util.ArrayList;
 
 public class GameMap {
-
-    private ArrayList<Room> openRooms;
+    private ArrayList<Room> openRooms = new ArrayList<>();
+    private Room heroPreviousLocation;
     private Hero hero;
 
-    public GameMap(ArrayList<Room> openRooms, Hero hero) {
-        this.openRooms = openRooms;
+    public GameMap(Hero hero) {
         this.hero = hero;
+        heroPreviousLocation = hero.getCurrentLocation();
     }
 
     public void setOpenRooms(ArrayList<Room> openRooms) {
@@ -30,7 +30,7 @@ public class GameMap {
     }
 
     public void setPreviousRoom(Room rm) {
-        hero.setPreviousRoom(rm);
+        heroPreviousLocation = rm;
     }
 
     public void showMap() {
@@ -56,7 +56,7 @@ public class GameMap {
                     //Checks if the hero is at the current specified point
                     if (heroPoints.getyAxis() == y && heroPoints.getxAxis() == x) {
 //                        System.out.printf(TextColor.ANSI_GREEN + "[ * ]" + TextColor.ANSI_BLACK);
-                        System.out.println("[ * ]");
+                        System.out.printf("[ * ]");
                     } else {
                         System.out.printf("[   ]");
                     }
@@ -66,6 +66,7 @@ public class GameMap {
             }
             System.out.println("\n");
         }
+        System.out.println(hero.getCurrentLocation().getName());
 //        System.out.println("      == "+ TextColor.ANSI_GREEN + heroLocation.getName() + TextColor.ANSI_BLACK + " ==      ");
 //        System.out.println(TextColor.ANSI_RESET +  "=================================" + TextColor.ANSI_BLACK);
     }

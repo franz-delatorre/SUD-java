@@ -1,9 +1,12 @@
 package com.franz.sud.java.game.platform.components;
 
 public abstract class Unit {
-    private String name;
+    protected String name;
     protected int damage;
     protected Health health;
+
+    public Unit() {
+    }
 
     public Unit(String name, int damage, Health health) {
         this.name = name;

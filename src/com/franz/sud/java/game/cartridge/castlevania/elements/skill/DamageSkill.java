@@ -1,6 +1,7 @@
 package com.franz.sud.java.game.cartridge.castlevania.elements.skill;
 
 import com.franz.sud.java.game.cartridge.castlevania.elements.unit.GameUnit;
+import com.franz.sud.java.game.misc.IO;
 import com.franz.sud.java.game.platform.components.Health;
 import com.franz.sud.java.game.platform.components.Skill;
 
@@ -28,6 +29,7 @@ public class DamageSkill extends Skill {
      */
     @Override
     public void skillEffect(GameUnit user, GameUnit victim) {
-        Health victimHealth  = victim.getHealth();
+        victim.takeDamage(damage);
+        IO.printDamage(damage);
     }
 }

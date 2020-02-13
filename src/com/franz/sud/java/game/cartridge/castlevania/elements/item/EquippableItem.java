@@ -38,7 +38,6 @@ public class EquippableItem extends AttributedItem {
         isPickedUp = false;
     }
 
-    @Override
     public void useItem(Hero hero) {
         StatHelper.increaseStats(hero.getUnitStats(), itemStats);
         isEquipped = true;

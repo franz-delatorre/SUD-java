@@ -4,6 +4,7 @@ import com.franz.sud.java.game.cartridge.castlevania.elements.stats.GameStats;
 import com.franz.sud.java.game.cartridge.castlevania.elements.stats.StatType;
 import com.franz.sud.java.game.cartridge.castlevania.elements.unit.GameUnit;
 import com.franz.sud.java.game.cartridge.castlevania.helper.StatHelper;
+import com.franz.sud.java.game.misc.IO;
 import com.franz.sud.java.game.platform.components.Skill;
 
 public class StatBoostSkill extends Skill {
@@ -54,10 +55,6 @@ public class StatBoostSkill extends Skill {
         return duration;
     }
 
-    public void setDuration(int duration) {
-        this.duration = duration;
-    }
-
     public void decreaseDuration() {
         duration--;
     }
@@ -69,8 +66,9 @@ public class StatBoostSkill extends Skill {
      */
     @Override
     public void skillEffect(GameUnit user, GameUnit victim) {
-        duration = 2;
+        duration = 3;
         StatHelper.increaseStats(user.getUnitStats(), skillStats);
+        IO.printStatBoost(skillStats);
     }
 
     /**

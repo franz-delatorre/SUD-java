@@ -10,11 +10,11 @@ public class Health {
     }
 
     public void decreaseCurrentHealth(int healthValue) {
-        currentHealth -= (currentHealth - healthValue < 0) ? 0 : healthValue;
+        currentHealth = (currentHealth - healthValue < 0) ? 0 : currentHealth - healthValue;
     }
 
     public void increaseCurrenthealth(int healthvalue) {
-        currentHealth += (currentHealth + healthvalue > maxHealth) ? maxHealth : healthvalue;
+        currentHealth = Math.min(currentHealth + healthvalue, maxHealth);
     }
 
     public void increaseMaxHealth(int healthValue) {

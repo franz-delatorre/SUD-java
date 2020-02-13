@@ -1,6 +1,9 @@
 package com.franz.sud.java.game.cartridge.castlevania;
 
 import com.franz.sud.java.game.cartridge.Cartridge;
+import com.franz.sud.java.game.cartridge.castlevania.elements.GameMap;
+import com.franz.sud.java.game.cartridge.castlevania.elements.GameProgress;
+import com.franz.sud.java.game.cartridge.castlevania.elements.item.AttributedItem;
 import com.franz.sud.java.game.cartridge.castlevania.elements.item.ConsumableItem;
 import com.franz.sud.java.game.cartridge.castlevania.elements.item.EquipmentType;
 import com.franz.sud.java.game.cartridge.castlevania.elements.item.EquippableItem;
@@ -9,27 +12,51 @@ import com.franz.sud.java.game.cartridge.castlevania.elements.unit.Enemy;
 import com.franz.sud.java.game.cartridge.castlevania.elements.unit.Hero;
 import com.franz.sud.java.game.cartridge.castlevania.elements.unit.SkilledEnemy;
 import com.franz.sud.java.game.cartridge.castlevania.service.BattleService;
+import com.franz.sud.java.game.cartridge.castlevania.service.InventoryService;
+import com.franz.sud.java.game.cartridge.castlevania.service.MapMovementService;
 import com.franz.sud.java.game.cartridge.castlevania.service.RoomService;
+import com.franz.sud.java.game.misc.Direction;
+import com.franz.sud.java.game.misc.IO;
 import com.franz.sud.java.game.platform.components.Point;
 import com.franz.sud.java.game.platform.components.Room;
 
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Castlevania implements Cartridge {
+    private final static HashMap<String, String> input = new HashMap<>();
+
     private boolean gameOver;
     private Enemy finalBoss;
     private Hero hero;
     private RoomService roomService = new RoomService();
-    private BattleService battleService;
+    private BattleService battleService = new BattleService();
+    private InventoryService inventoryService = new InventoryService();
+    private MapMovementService mapService = new MapMovementService();
+    private GameProgress progress = new GameProgress();
 
     public Castlevania() {
-        battleService = new BattleService(hero);
         gameOver = false;
     }
 
+//    private void consumableItemDrop() {
+//        Random rand = new Random();
+//        int c = rand.nextInt(3);
+//        if (c > 0) {
+//            switch (c) {
+//                case 1:
+//                    break;
+//                case 2:
+//                    break;
+//                case 3:
+//                    break;
+//            }
+//        }
+//    }
+
     @Override
     public boolean isFinished() {
-        return finalBoss.isAlive();
+        return !finalBoss.isAlive();
     }
 
     @Override
@@ -40,8 +67,39 @@ public class Castlevania implements Cartridge {
     @Override
     public void start() {
         while (!gameOver) {
+            checkProgress();
             checkRoomForEnemy();
             checkRoomForItem();
+            mainMenu();
+        }
+    }
+
+    private void checkProgress() {
+        Room progressBossRoom = progress.getProgressBossRoom();
+        if (roomService.enemyIsAlive(progressBossRoom)) return;
+
+        progress.incrementProgress();
+
+        ArrayList<Room> newOpenRooms = progress.getCurrentProgressRooms();
+        mapService.setOpenRooms(newOpenRooms);
+    }
+
+    private void mainMenu() {
+        input.clear();
+        input.put("q", "Quit");
+        input.put("i", "Inventory");
+        input.put("m", "Map");
+
+        switch (IO.userInput(input)) {
+            case "i":
+                inventoryService.OpenInventoryMenu();
+                break;
+            case "m":
+                mapService.mapMenu();
+                break;
+            case "q":
+                gameOver = true;
+                break;
         }
     }
 
@@ -49,7 +107,16 @@ public class Castlevania implements Cartridge {
         Room currRoom = hero.getCurrentLocation();
         if (!roomService.roomContainsItem(currRoom)) return;
 
+        AttributedItem item = roomService.getRoomItem(currRoom);
 
+        System.out.println("You found an item, pick it up?");
+        switch (IO.pickupItem()) {
+            case "y":
+                inventoryService.addItemToInventory(item);
+                break;
+            case "n":
+                break;
+        }
     }
 
     private void checkRoomForEnemy() {
@@ -57,28 +124,16 @@ public class Castlevania implements Cartridge {
         if (!roomService.roomContainsEnemy(currRoom)) return;
 
         Enemy e = roomService.getRoomEnemy(currRoom);
-        battleService.simulateBattle(e);
-    }
+        int winner = battleService.simulateBattle(e);
 
-    private void consumableItemDrop() {
-        Random rand = new Random();
-        int c = rand.nextInt(3);
-        if (c > 0) {
-            switch (c) {
-                case 1:
+        if (winner > 0) {
 
-                    break;
-                case 2:
-                    break;
-                case 3:
-                    break;
-            }
         }
     }
 
     @Override
     public void init() {
-        // Sets up skills
+        // Skill setup
         HealSkill lesserHeal = new HealSkill("Lesser Heal", 30);
         HealSkill heal = new HealSkill("Heal" , 60);
         DamageSkill lightningBolt = new DamageSkill("Lightning Bolt", 15);
@@ -97,19 +152,21 @@ public class Castlevania implements Cartridge {
                 .lifesteal(10)
                 .duration(5)
                 .build();
-        //Hero of the game
+
+        // Hero of the game
         hero = new Hero.Builder("Alucard")
                 .health(115)
-                .damage(15)
+                .damage(100)
                 .lifesteal(20)
                 .criticalChance(5)
                 .evasion(0)
                 .skill(soulSteal)
                 .build();
 
-        //All other units
+        // All other units
         finalBoss = new SkilledEnemy.Builder("Vlad the Impaler")
-                .damage(65).health(700)
+                .damage(65)
+                .health(700)
                 .evasion(5)
                 .criticalChance(25)
                 .lifesteal(25)
@@ -133,7 +190,7 @@ public class Castlevania implements Cartridge {
                 .skill(fireBolt)
                 .build();
         SkilledEnemy minotaur = new SkilledEnemy.Builder("Minotaur")
-                .damage(60)
+                .damage(1)
                 .health(350)
                 .evasion(5)
                 .criticalChance(25)
@@ -201,7 +258,7 @@ public class Castlevania implements Cartridge {
                 .lifesteal(10)
                 .build();
 
-        // Sets up Equippable Items
+        // Equippable Item setup
         EquippableItem commonSword = new EquippableItem.Builder("Common Sword")
                 .evasion(5)
                 .damage(10)
@@ -259,7 +316,7 @@ public class Castlevania implements Cartridge {
                 .equipmentType(EquipmentType.AMULET)
                 .build();
 
-        // Sets up Consumable Items
+        // Consumable item setup
         ConsumableItem lowTierEvasionBoost = new ConsumableItem.Builder("Lesser Evasion Potion")
                 .tier(1)
                 .evasion(2)
@@ -321,7 +378,7 @@ public class Castlevania implements Cartridge {
                 .health(99)
                 .build();
 
-        // Sets up rooms of the first map
+        // first map rooms setup
         Room hallwayOne = new Room("Hallway One", new Point(0, -1));
         Room hallwayTwo = new Room("Hallway Two", new Point(0, 0));
         Room hallwayThree = new Room("Hallway Three", new Point(0, 1));
@@ -331,7 +388,7 @@ public class Castlevania implements Cartridge {
         Room kitchen = new Room("Kitchen", new Point(2, 0));
         Room masterBedroom = new Room("Master's Bedroom", new Point(0, 2));
 
-        // Sets up rooms of the second map
+        // second map rooms setup
         Room hallwayOne_2 = hallwayOne.clone();
         Room hallwayTwo_2 = hallwayTwo.clone();
         Room hallwayThree_2 = hallwayThree.clone();
@@ -340,6 +397,27 @@ public class Castlevania implements Cartridge {
         Room diningHall_2 = diningHall.clone();
         Room kitchen_2 = kitchen.clone();
         Room masterBedroom_2 = masterBedroom.clone();
+
+        // Setting the adjacent rooms for each rooms
+        hallwayOne.setAdjacentRoom(Direction.NORTH, hallwayTwo);
+        hallwayOne_2.setAdjacentRoom(Direction.NORTH, hallwayTwo_2);
+
+        hallwayTwo.setAdjacentRoom(Direction.WEST, livingRoom);
+        hallwayTwo.setAdjacentRoom(Direction.EAST, diningHall);
+        hallwayTwo.setAdjacentRoom(Direction.NORTH, hallwayThree);
+
+        hallwayTwo_2.setAdjacentRoom(Direction.WEST, livingRoom_2);
+        hallwayTwo_2.setAdjacentRoom(Direction.EAST, diningHall_2);
+        hallwayTwo_2.setAdjacentRoom(Direction.NORTH, hallwayThree_2);
+
+        hallwayThree_2.setAdjacentRoom(Direction.NORTH, masterBedroom_2);
+        hallwayThree.setAdjacentRoom(Direction.NORTH, masterBedroom);
+
+        livingRoom.setAdjacentRoom(Direction.WEST, servantQuarters);
+        livingRoom_2.setAdjacentRoom(Direction.WEST, servantQuarters_2);
+
+        diningHall.setAdjacentRoom(Direction.EAST, kitchen);
+        diningHall_2.setAdjacentRoom(Direction.EAST, kitchen_2);
 
         // Sets up the items for each room
         roomService.addItem(hallwayTwo, commonSword);
@@ -352,6 +430,7 @@ public class Castlevania implements Cartridge {
         roomService.addItem(servantQuarters_2, rapier);
 
         //Sets up the enemy for each room
+        roomService.addEnemy(hallwayOne, minotaur);
         roomService.addEnemy(livingRoom, banshee);
         roomService.addEnemy(servantQuarters, medusa);
         roomService.addEnemy(diningHall, imp);
@@ -364,5 +443,54 @@ public class Castlevania implements Cartridge {
         roomService.addEnemy(kitchen_2, priestess);
         roomService.addEnemy(servantQuarters_2, death);
         roomService.addEnemy(hallwayOne_2, finalBoss);
+
+        // Sets the game services
+        battleService.setHero(hero);
+        inventoryService.setHero(hero);
+        GameMap map = new GameMap(hero);
+        mapService.setMap(map);
+
+        // Setup rooms opened of each progress
+        ArrayList<Room> firstProg = new ArrayList<>();
+        firstProg.add(hallwayOne);
+        firstProg.add(hallwayTwo);
+        firstProg.add(livingRoom);
+        firstProg.add(servantQuarters);
+
+        ArrayList<Room> secondProg = (ArrayList<Room>) firstProg.clone();
+        secondProg.add(diningHall);
+        secondProg.add(kitchen);
+
+        ArrayList<Room> thirdProg = (ArrayList<Room>) secondProg.clone();
+        thirdProg.add(hallwayThree);
+        thirdProg.add(masterBedroom);
+
+        ArrayList<Room> fourthProg = (ArrayList<Room>) thirdProg.clone();
+        fourthProg.add(masterBedroom_2);
+        fourthProg.add(hallwayThree_2);
+        fourthProg.add(hallwayTwo_2);
+        fourthProg.add(livingRoom_2);
+        fourthProg.add(servantQuarters_2);
+
+        ArrayList<Room> fifthProg = (ArrayList<Room>) fourthProg.clone();
+        fifthProg.add(diningHall_2);
+        fifthProg.add(kitchen_2);
+
+        ArrayList<Room> sixthProg = (ArrayList<Room>) fifthProg.clone();
+        sixthProg.add(diningHall_2);
+        sixthProg.add(kitchen_2);
+
+        progress.addProgressRooms(firstProg);
+        progress.addProgressRooms(secondProg);
+        progress.addProgressRooms(thirdProg);
+        progress.addProgressRooms(fourthProg);
+        progress.addProgressRooms(fifthProg);
+        progress.addProgressRooms(sixthProg);
+
+        //Initialized open room
+        map.setOpenRooms(progress.getCurrentProgressRooms());
+
+        //Set hero's current location
+        hero.setCurrentLocation(hallwayOne);
     }
 }

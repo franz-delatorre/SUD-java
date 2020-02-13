@@ -10,7 +10,7 @@ import com.franz.sud.java.game.platform.components.Stats;
 import com.franz.sud.java.game.platform.components.Unit;
 
 public class GameUnit extends Unit {
-    private GameStats unitStats;
+    protected GameStats unitStats;
     private Room currentLocation;
 
     abstract static class Builder<T extends Builder<T>> {
@@ -25,7 +25,6 @@ public class GameUnit extends Unit {
             damage = 0;
             health = new Health(0);
             unitStats = new GameStats();
-            name = null;
             currentLocation = null;
         }
 
@@ -35,7 +34,7 @@ public class GameUnit extends Unit {
         }
 
         public T health(int health) {
-            this.health.increaseMaxHealth(health);
+            this.health = new Health(health);
             return self();
         }
 
@@ -66,7 +65,10 @@ public class GameUnit extends Unit {
     }
 
     protected GameUnit(Builder<?> builder) {
-        super(builder.name, builder.damage, builder.health);
+        super();
+        name = builder.name;
+        health = builder.health;
+        damage = builder.damage;
         unitStats = builder.unitStats;
     }
 
@@ -109,16 +111,8 @@ public class GameUnit extends Unit {
         return health.getMaxHealth();
     }
 
-    public void increaseStat(StatType statType, int statValue) {
-        unitStats.increaseStat(statType, statValue);
-    }
-
-    public void decreaseStat(StatType statType, int statValue) {
-        unitStats.decreaseStat(statType, statValue);
-    }
-
     public int getMinDamage() {
-        return (int) (damage * .1);
+        return (int) (damage - (damage * .1));
     }
 
     public void currentHealthToMax() {

@@ -40,11 +40,12 @@ public class ConsumableItem  extends AttributedItem{
         isConsumed = false;
     }
 
-    @Override
     void useItem(Hero hero) {
         StatHelper.increaseStats(hero.getUnitStats(), itemStats);
         isConsumed = true;
     }
+
+
 
     public boolean isConsumed() {
         return isConsumed;

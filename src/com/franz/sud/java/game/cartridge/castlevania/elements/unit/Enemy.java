@@ -14,7 +14,7 @@ public class Enemy extends GameUnit {
 
         @Override
         protected Builder self() {
-            return null;
+            return this;
         }
     }
 

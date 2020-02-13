@@ -11,7 +11,10 @@ import java.util.HashMap;
 public class MapMovementService {
     private GameMap map;
 
-    public MapMovementService(GameMap map) {
+    public MapMovementService() {
+    }
+
+    public void setMap(GameMap map) {
         this.map = map;
     }
 
@@ -19,13 +22,13 @@ public class MapMovementService {
         map.setOpenRooms(rm);
     }
 
-
     /**
      * Will move the character around the map. Users cannot move to the adjacent room if
      * it is not listed in the open rooms of the current map used.
      */
-    public void mapMenu() {
+    public boolean mapMenu() {
         boolean stillUsingMap = true;
+        boolean heroMoved = false;
         while (stillUsingMap) {
             map.showMap();
             System.out.println();
@@ -34,10 +37,10 @@ public class MapMovementService {
 
             HashMap<String, String> input = new HashMap<>();
             if (map.canMoveToAdjacentRoom(Direction.NORTH, currRoom)) input.put("w", "Move up");
-            if (map.canMoveToAdjacentRoom(Direction.SOUTH, currRoom)) input.put("S", "Move down");
-            if (map.canMoveToAdjacentRoom(Direction.EAST, currRoom)) input.put("D", "Move right");
-            if (map.canMoveToAdjacentRoom(Direction.WEST, currRoom)) input.put("A", "Move left");
-            input.put("E", "Exit");
+            if (map.canMoveToAdjacentRoom(Direction.SOUTH, currRoom)) input.put("s", "Move down");
+            if (map.canMoveToAdjacentRoom(Direction.EAST, currRoom)) input.put("d", "Move right");
+            if (map.canMoveToAdjacentRoom(Direction.WEST, currRoom)) input.put("a", "Move left");
+            input.put("e", "Exit");
 
             switch (IO.userInput(input)) {
                 case "w":
@@ -58,6 +61,7 @@ public class MapMovementService {
                 default:
                     System.out.println("Wrong input, try again");
             }
+
         }
     }
 
@@ -66,13 +70,15 @@ public class MapMovementService {
      * it will alert the player and requests a new input for another room;
      * @param to
      */
-    private void moveTo(Direction to) {
+    private boolean moveTo(Direction to) {
         Room rm = map.getHeroLocation();
         if (map.canMoveToAdjacentRoom(to, rm)) {
             map.setPreviousRoom(rm);
             map.setHeroLocation(rm.getAdjacentRoom(to));
+            return true;
         }
         else {
+            return false;
 //            System.out.println(ANSI_RED + "Wrong input, try again" + ANSI_BLACK);
         }
     }

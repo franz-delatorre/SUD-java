@@ -2,15 +2,13 @@ package com.franz.sud.java.game.cartridge.castlevania.elements.item;
 
 import com.franz.sud.java.game.cartridge.castlevania.elements.stats.GameStats;
 import com.franz.sud.java.game.cartridge.castlevania.elements.stats.StatType;
-import com.franz.sud.java.game.cartridge.castlevania.elements.unit.GameUnit;
-import com.franz.sud.java.game.cartridge.castlevania.elements.unit.Hero;
 import com.franz.sud.java.game.platform.components.Item;
-import com.franz.sud.java.game.platform.components.Unit;
 
 public abstract class AttributedItem extends Item {
     private int health;
     protected GameStats itemStats;
     private int damage;
+    private boolean isPickedUp;
     
     abstract static class Builder<T extends Builder<T>> {
         private int health;
@@ -65,9 +63,16 @@ public abstract class AttributedItem extends Item {
         itemStats = builder.itemStats;
         damage = builder.damage;
         health = builder.health;
+        isPickedUp = false;
     }
 
-    abstract void useItem(Hero hero);
+    public void pickedUp() {
+        isPickedUp = true;
+    }
+
+    public boolean isPickedUp() {
+        return isPickedUp;
+    }
 
     public int getHealth() {
         return health;
@@ -75,5 +80,9 @@ public abstract class AttributedItem extends Item {
 
     public int getDamage() {
         return damage;
+    }
+
+    public GameStats getItemStats() {
+        return itemStats;
     }
 }

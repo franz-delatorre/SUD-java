@@ -24,9 +24,5 @@ public abstract class Stats {
         return statValue;
     }
 
-    public void setStatValue(int statValue) {
-        this.statValue = statValue;
-    }
-
     protected abstract void statEffect();
 }

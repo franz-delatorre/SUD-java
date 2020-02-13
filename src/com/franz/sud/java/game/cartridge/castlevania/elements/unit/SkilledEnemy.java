@@ -42,11 +42,27 @@ public class SkilledEnemy extends Enemy implements UseSkill{
     private SkilledEnemy(Builder builder) {
         super(builder);
         itemDropped = false;
+        skill = builder.skill;
+    }
+
+    @Override
+    public String getSkillName() {
+        return skill.getName();
     }
 
     @Override
     public void useSkill(GameUnit victim) {
         skill.skillEffect(this, victim);
+    }
+
+    @Override
+    public void setCooldown(int cd) {
+        skill.setCooldown(cd);
+    }
+
+    @Override
+    public String getUserName() {
+        return name;
     }
 
     @Override
@@ -56,13 +72,5 @@ public class SkilledEnemy extends Enemy implements UseSkill{
 
     public Skill getSkill() {
         return skill;
-    }
-
-    public void dropItem() {
-        itemDropped = true;
-    }
-
-    public boolean isItemDropped() {
-        return itemDropped;
     }
 }

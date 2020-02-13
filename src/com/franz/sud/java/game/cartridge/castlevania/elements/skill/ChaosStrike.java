@@ -1,6 +1,7 @@
 package com.franz.sud.java.game.cartridge.castlevania.elements.skill;
 
 import com.franz.sud.java.game.cartridge.castlevania.elements.unit.GameUnit;
+import com.franz.sud.java.game.misc.IO;
 import com.franz.sud.java.game.platform.components.Skill;
 
 public class ChaosStrike extends Skill {
@@ -17,5 +18,6 @@ public class ChaosStrike extends Skill {
     public void skillEffect(GameUnit user, GameUnit victim) {
         int damage = user.getDamage() * 4;
         victim.takeDamage(damage);
+        IO.printDamage(damage);
     }
 }
