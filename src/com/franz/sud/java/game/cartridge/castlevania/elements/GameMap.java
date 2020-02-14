@@ -112,4 +112,8 @@ public class GameMap {
         Room adjRm = room.getAdjacentRoom(to);
         return openRooms.contains(adjRm);
     }
+
+    public void retractHeroLocation() {
+        setHeroLocation(heroPreviousLocation);
+    }
 }

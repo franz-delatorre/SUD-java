@@ -17,12 +17,16 @@ public class GameProgress {
     }
 
     public ArrayList<Room> getCurrentProgressRooms() {
-        return progressRooms.get(progress);
+        return progress < progressRooms.size() ? progressRooms.get(progress) : null;
     }
 
     public Room getProgressBossRoom() {
         ArrayList<Room> rooms = progressRooms.get(progress);
         return rooms.get(rooms.size() - 1);
+    }
+
+    public int getProgress() {
+        return progress;
     }
 
     public void incrementProgress() {

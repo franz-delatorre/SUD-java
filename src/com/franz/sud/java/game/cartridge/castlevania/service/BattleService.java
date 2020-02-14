@@ -14,7 +14,6 @@ public class BattleService {
     private Enemy enemy;
 
     public BattleService() {
-
     }
 
     public void setHero(Hero hero) {
@@ -47,12 +46,7 @@ public class BattleService {
         }
 
         if (winner() == enemy){
-            if (fightAgain()){
-                simulateBattle(battleEnemy);
-            }
-            else {
-                return 0;
-            }
+            return 0;
         }
         return 1;
     }
@@ -141,21 +135,6 @@ public class BattleService {
         return enemy;
     }
 
-    private boolean fightAgain() {
-        input.clear();
-        input.put("y", "Yes");
-        input.put("n", "No");
-
-        boolean fightAgain = true;
-        switch (IO.userInput(input)) {
-            case "y":
-                fightAgain = true;
-            case "n":
-                fightAgain = false;
-        }
-        return fightAgain;
-    }
-
     private void decrementCooldown() {
         Skill heroSkill = hero.getSkill();
         heroSkill.decrementCooldown();
@@ -166,13 +145,15 @@ public class BattleService {
     }
 
     private void decrementBoost() {
-        Skill skill = ((SkilledEnemy) enemy).getSkill();
-        if (skill instanceof StatBoostSkill) {
-            StatBoostSkill s = (StatBoostSkill) skill;
-            if (s.getDuration() == 0) {
-                s.skillAfterEffect(enemy);
+        if (enemy instanceof SkilledEnemy) {
+            Skill skill = ((SkilledEnemy) enemy).getSkill();
+            if (skill instanceof StatBoostSkill) {
+                StatBoostSkill s = (StatBoostSkill) skill;
+                if (s.getDuration() == 0) {
+                    s.skillAfterEffect(enemy);
+                }
+                s.decreaseDuration();
             }
-            s.decreaseDuration();
         }
     }
 }

@@ -31,7 +31,7 @@ public class InventoryService {
         do {
             input.clear();
             if (!consumables.isEmpty()) input.put("c", "Show Consumable Items");
-            if (equippables.isEmpty()) input.put("i", "Show Equippable Items");
+            if (!equippables.isEmpty()) input.put("i", "Show Equippable Items");
             input.put("e", "Exit Inventory Menu");
 
             switch (IO.userInput(input)){
@@ -112,4 +112,5 @@ public class InventoryService {
     public void consumeItem(int index) {
         ConsumableItem item = consumables.get(index - 1);
     }
+
 }

@@ -26,7 +26,7 @@ public class MapMovementService {
      * Will move the character around the map. Users cannot move to the adjacent room if
      * it is not listed in the open rooms of the current map used.
      */
-    public boolean mapMenu() {
+    public int mapMenu() {
         boolean stillUsingMap = true;
         boolean heroMoved = false;
         while (stillUsingMap) {
@@ -45,15 +45,19 @@ public class MapMovementService {
             switch (IO.userInput(input)) {
                 case "w":
                     moveTo(Direction.NORTH);
+                    heroMoved = true;
                     break;
                 case "s":
                     moveTo(Direction.SOUTH);
+                    heroMoved = true;
                     break;
                 case "a":
                     moveTo(Direction.WEST);
+                    heroMoved = true;
                     break;
                 case "d":
                     moveTo(Direction.EAST);
+                    heroMoved = true;
                     break;
                 case "e":
                     stillUsingMap = false;
@@ -61,8 +65,9 @@ public class MapMovementService {
                 default:
                     System.out.println("Wrong input, try again");
             }
-
         }
+        if (heroMoved) return 0;
+        return 1;
     }
 
     /**
@@ -83,9 +88,7 @@ public class MapMovementService {
         }
     }
 
-    private void showMap() {
-        map.showMap();
+    public void resetHeroLocation() {
+        map.retractHeroLocation();
     }
-
-
 }

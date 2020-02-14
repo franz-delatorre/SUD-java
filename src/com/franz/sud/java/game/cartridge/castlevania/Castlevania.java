@@ -29,6 +29,7 @@ public class Castlevania implements Cartridge {
     private boolean gameOver;
     private Enemy finalBoss;
     private Hero hero;
+    private Room secondLocation;
     private RoomService roomService = new RoomService();
     private BattleService battleService = new BattleService();
     private InventoryService inventoryService = new InventoryService();
@@ -67,9 +68,7 @@ public class Castlevania implements Cartridge {
     @Override
     public void start() {
         while (!gameOver) {
-            checkProgress();
-            checkRoomForEnemy();
-            checkRoomForItem();
+            if (finalBoss.isAlive()) gameOver = true;
             mainMenu();
         }
     }
@@ -82,6 +81,9 @@ public class Castlevania implements Cartridge {
 
         ArrayList<Room> newOpenRooms = progress.getCurrentProgressRooms();
         mapService.setOpenRooms(newOpenRooms);
+        if (progress.getProgress() == 3) {
+            hero.setCurrentLocation(secondLocation);
+        }
     }
 
     private void mainMenu() {
@@ -93,9 +95,17 @@ public class Castlevania implements Cartridge {
         switch (IO.userInput(input)) {
             case "i":
                 inventoryService.OpenInventoryMenu();
+                mainMenu();
                 break;
             case "m":
-                mapService.mapMenu();
+                int stillInMapMenu;
+                do {
+                    stillInMapMenu = mapService.mapMenu();
+                    checkRoomForEnemy();
+                    checkRoomForItem();
+                    checkProgress();
+                } while (stillInMapMenu < 1);
+                mainMenu();
                 break;
             case "q":
                 gameOver = true;
@@ -113,6 +123,7 @@ public class Castlevania implements Cartridge {
         switch (IO.pickupItem()) {
             case "y":
                 inventoryService.addItemToInventory(item);
+                roomService.removeItem(currRoom);
                 break;
             case "n":
                 break;
@@ -126,8 +137,19 @@ public class Castlevania implements Cartridge {
         Enemy e = roomService.getRoomEnemy(currRoom);
         int winner = battleService.simulateBattle(e);
 
-        if (winner > 0) {
+        if (winner < 1) {
+            input.clear();
+            input.put("y", "Yes");
+            input.put("n", "No");
 
+            boolean fightAgain = true;
+            switch (IO.userInput(input)) {
+                case "y":
+                    checkRoomForEnemy();
+                    break;
+                case "n":
+                    mapService.resetHeroLocation();
+            }
         }
     }
 
@@ -155,8 +177,8 @@ public class Castlevania implements Cartridge {
 
         // Hero of the game
         hero = new Hero.Builder("Alucard")
-                .health(115)
-                .damage(100)
+                .health(10)
+                .damage(1)
                 .lifesteal(20)
                 .criticalChance(5)
                 .evasion(0)
@@ -430,7 +452,6 @@ public class Castlevania implements Cartridge {
         roomService.addItem(servantQuarters_2, rapier);
 
         //Sets up the enemy for each room
-        roomService.addEnemy(hallwayOne, minotaur);
         roomService.addEnemy(livingRoom, banshee);
         roomService.addEnemy(servantQuarters, medusa);
         roomService.addEnemy(diningHall, imp);
@@ -465,7 +486,7 @@ public class Castlevania implements Cartridge {
         thirdProg.add(hallwayThree);
         thirdProg.add(masterBedroom);
 
-        ArrayList<Room> fourthProg = (ArrayList<Room>) thirdProg.clone();
+        ArrayList<Room> fourthProg = new ArrayList<>();
         fourthProg.add(masterBedroom_2);
         fourthProg.add(hallwayThree_2);
         fourthProg.add(hallwayTwo_2);
@@ -480,17 +501,24 @@ public class Castlevania implements Cartridge {
         sixthProg.add(diningHall_2);
         sixthProg.add(kitchen_2);
 
+        ArrayList<Room> seventhProg = (ArrayList<Room>) sixthProg.clone();
+        seventhProg.add(hallwayOne_2);
+
         progress.addProgressRooms(firstProg);
         progress.addProgressRooms(secondProg);
         progress.addProgressRooms(thirdProg);
         progress.addProgressRooms(fourthProg);
         progress.addProgressRooms(fifthProg);
         progress.addProgressRooms(sixthProg);
+        progress.addProgressRooms(seventhProg);
 
         //Initialized open room
         map.setOpenRooms(progress.getCurrentProgressRooms());
 
         //Set hero's current location
         hero.setCurrentLocation(hallwayOne);
+
+        //Sets the second location after the first phase is complete
+        secondLocation = masterBedroom_2;
     }
 }

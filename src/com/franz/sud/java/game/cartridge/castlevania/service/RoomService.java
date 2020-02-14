@@ -2,7 +2,9 @@ package com.franz.sud.java.game.cartridge.castlevania.service;
 
 import com.franz.sud.java.game.cartridge.castlevania.elements.item.AttributedItem;
 import com.franz.sud.java.game.cartridge.castlevania.elements.unit.Enemy;
+import com.franz.sud.java.game.platform.components.Item;
 import com.franz.sud.java.game.platform.components.Room;
+import org.w3c.dom.Attr;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +26,7 @@ public class RoomService {
     }
 
     public boolean roomContainsItem(Room room) {
-        return itemList.containsValue(room);
+        return itemList.containsKey(room);
     }
 
     public AttributedItem getRoomItem(Room room) {
@@ -42,5 +44,9 @@ public class RoomService {
     public boolean enemyIsAlive(Room room) {
         Enemy enemy = enemyList.get(room);
         return enemy.isAlive();
+    }
+
+    public void removeItem(Room room) {
+        itemList.remove(room);
     }
 }
