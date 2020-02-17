@@ -8,22 +8,12 @@ public abstract class Unit {
     public Unit() {
     }
 
-    public Unit(String name, int damage, Health health) {
-        this.name = name;
-        this.damage = damage;
-        this.health = health;
-    }
-
     public void takeDamage(int damage) {
         health.decreaseCurrentHealth(damage);
     }
 
     public void heal(int heal) {
         health.increaseCurrenthealth(heal);
-    }
-
-    public void increaseMaxHealth(int hpVal) {
-        health.increaseMaxHealth(hpVal);
     }
 
     public String getName() {

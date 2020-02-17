@@ -18,14 +18,12 @@ public class GameUnit extends Unit {
         private int damage;
         private Health health;
         private GameStats unitStats;
-        private Room currentLocation;
 
         public Builder(String name) {
             this.name = name;
             damage = 0;
             health = new Health(0);
             unitStats = new GameStats();
-            currentLocation = null;
         }
 
         public T damage(int damage) {
@@ -50,11 +48,6 @@ public class GameUnit extends Unit {
 
         public T criticalChance(int critChance) {
             unitStats.increaseStat(StatType.CRITICAL, critChance);
-            return self();
-        }
-
-        public T location(Room room) {
-            currentLocation = room;
             return self();
         }
 

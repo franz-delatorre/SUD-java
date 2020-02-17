@@ -13,10 +13,7 @@ public class HealSkill extends Skill {
     }
 
     /**
-     * Replenishes the user's current health by this heal value. If the
-     * replenished heal is greater than the max health the current health
-     * is set to the value of the max health. Thus limit the healing not
-     * greater than max health.
+     * Replenishes the user's current health by the healValue set.
      * @param user
      * @param victim
      */

@@ -12,17 +12,9 @@ public class DamageSkill extends Skill {
         this.name = name;
     }
 
-    public int getDamage() {
-        return damage;
-    }
-
-    public void setDamage(int damage) {
-        this.damage = damage;
-    }
-
     /**
      * Deals damage to the opponent. The damage dealt is based on
-     * the damage set
+     * the damage set.
      * @param user
      * @param victim
      */

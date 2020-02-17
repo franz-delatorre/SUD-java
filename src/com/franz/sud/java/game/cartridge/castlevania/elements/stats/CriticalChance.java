@@ -8,6 +8,7 @@ public class CriticalChance extends Stats {
 
     public CriticalChance(int statValue) {
         super(statValue);
+        name = "Critical Chance";
     }
 
     public boolean canCrit() {
@@ -15,6 +16,9 @@ public class CriticalChance extends Stats {
         return canCrit;
     }
 
+    /**
+     * Sets canCrit to true if the attack can inflict twice the damage.
+     */
     @Override
     protected void statEffect() {
         canCrit = StatHelper.statEffectSuccessful(statValue);

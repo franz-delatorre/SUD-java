@@ -3,17 +3,14 @@ package com.franz.sud.java.game.cartridge.castlevania;
 import com.franz.sud.java.game.cartridge.Cartridge;
 import com.franz.sud.java.game.cartridge.castlevania.elements.GameMap;
 import com.franz.sud.java.game.cartridge.castlevania.elements.GameProgress;
-import com.franz.sud.java.game.cartridge.castlevania.elements.item.AttributedItem;
-import com.franz.sud.java.game.cartridge.castlevania.elements.item.ConsumableItem;
-import com.franz.sud.java.game.cartridge.castlevania.elements.item.EquipmentType;
-import com.franz.sud.java.game.cartridge.castlevania.elements.item.EquippableItem;
+import com.franz.sud.java.game.cartridge.castlevania.elements.item.*;
 import com.franz.sud.java.game.cartridge.castlevania.elements.skill.*;
 import com.franz.sud.java.game.cartridge.castlevania.elements.unit.Enemy;
 import com.franz.sud.java.game.cartridge.castlevania.elements.unit.Hero;
 import com.franz.sud.java.game.cartridge.castlevania.elements.unit.SkilledEnemy;
 import com.franz.sud.java.game.cartridge.castlevania.service.BattleService;
 import com.franz.sud.java.game.cartridge.castlevania.service.InventoryService;
-import com.franz.sud.java.game.cartridge.castlevania.service.MapMovementService;
+import com.franz.sud.java.game.cartridge.castlevania.service.MapService;
 import com.franz.sud.java.game.cartridge.castlevania.service.RoomService;
 import com.franz.sud.java.game.misc.Direction;
 import com.franz.sud.java.game.misc.IO;
@@ -21,10 +18,13 @@ import com.franz.sud.java.game.platform.components.Point;
 import com.franz.sud.java.game.platform.components.Room;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Random;
 
 public class Castlevania implements Cartridge {
     private final static HashMap<String, String> input = new HashMap<>();
+    private final Random rand = new Random();
 
     private boolean gameOver;
     private Enemy finalBoss;
@@ -33,27 +33,15 @@ public class Castlevania implements Cartridge {
     private RoomService roomService = new RoomService();
     private BattleService battleService = new BattleService();
     private InventoryService inventoryService = new InventoryService();
-    private MapMovementService mapService = new MapMovementService();
+    private MapService mapService = new MapService();
     private GameProgress progress = new GameProgress();
+    private String name;
+    private EnumMap<ConsumableItemTier, ArrayList<ConsumableItem>> consumables = new EnumMap<>(ConsumableItemTier.class);
 
     public Castlevania() {
+        name = "Castlevania";
         gameOver = false;
     }
-
-//    private void consumableItemDrop() {
-//        Random rand = new Random();
-//        int c = rand.nextInt(3);
-//        if (c > 0) {
-//            switch (c) {
-//                case 1:
-//                    break;
-//                case 2:
-//                    break;
-//                case 3:
-//                    break;
-//            }
-//        }
-//    }
 
     @Override
     public boolean isFinished() {
@@ -62,17 +50,24 @@ public class Castlevania implements Cartridge {
 
     @Override
     public String getGameName() {
-        return "Castlevania";
+        return name;
     }
 
+    /**
+     * Commences the game
+     */
     @Override
     public void start() {
         while (!gameOver) {
-            if (finalBoss.isAlive()) gameOver = true;
+            if (!finalBoss.isAlive()) gameOver = true;
             mainMenu();
         }
     }
 
+    /**
+     * Checks the progress of the game. If the progress Boss is slain, then
+     * the current progress will increment.
+     */
     private void checkProgress() {
         Room progressBossRoom = progress.getProgressBossRoom();
         if (roomService.enemyIsAlive(progressBossRoom)) return;
@@ -86,22 +81,32 @@ public class Castlevania implements Cartridge {
         }
     }
 
+    /**
+     * Opens the main menu of the game
+     */
     private void mainMenu() {
         input.clear();
         input.put("q", "Quit");
         input.put("i", "Inventory");
+        input.put("c", "Character");
         input.put("m", "Map");
 
         switch (IO.userInput(input)) {
             case "i":
-                inventoryService.OpenInventoryMenu();
-                mainMenu();
+                inventoryService.openInventoryMenu();
+                break;
+            case "c":
+                IO.showCharacter(hero);
                 break;
             case "m":
                 int stillInMapMenu;
                 do {
                     stillInMapMenu = mapService.mapMenu();
                     checkRoomForEnemy();
+                    if (!finalBoss.isAlive()) {
+                        gameOver = true;
+                        return;
+                    }
                     checkRoomForItem();
                     checkProgress();
                 } while (stillInMapMenu < 1);
@@ -113,6 +118,11 @@ public class Castlevania implements Cartridge {
         }
     }
 
+    /**
+     * Checks the Room for available items. Will also ask the player if they will pick up
+     * the item. If the player picks up the item, the item is moved to the inventory. If
+     * the item is not picked up it will be destroyed.
+     */
     private void checkRoomForItem() {
         Room currRoom = hero.getCurrentLocation();
         if (!roomService.roomContainsItem(currRoom)) return;
@@ -120,16 +130,22 @@ public class Castlevania implements Cartridge {
         AttributedItem item = roomService.getRoomItem(currRoom);
 
         System.out.println("You found an item, pick it up?");
+        IO.showItemAttributes(item);
         switch (IO.pickupItem()) {
             case "y":
                 inventoryService.addItemToInventory(item);
                 roomService.removeItem(currRoom);
                 break;
             case "n":
+                roomService.removeItem(currRoom);
                 break;
         }
     }
 
+    /**
+     * Checks the room if there is an enemy. If an enemy exist a battle
+     * simulation will commence between the player and room's enemy.
+     */
     private void checkRoomForEnemy() {
         Room currRoom = hero.getCurrentLocation();
         if (!roomService.roomContainsEnemy(currRoom)) return;
@@ -142,15 +158,48 @@ public class Castlevania implements Cartridge {
             input.put("y", "Yes");
             input.put("n", "No");
 
-            boolean fightAgain = true;
             switch (IO.userInput(input)) {
                 case "y":
-                    checkRoomForEnemy();
+                    battleService.simulateBattle(e);
                     break;
                 case "n":
                     mapService.resetHeroLocation();
             }
+        } else {
+            if (finalBoss.isAlive())
+                dropConsumable(e);
         }
+    }
+
+    /**
+     * Drops a consumable item when the enemy is killed, all consumable items are
+     * added directly to the player's inventory
+     * @param enemy
+     */
+    private void dropConsumable(Enemy enemy) {
+        int num = rand.nextInt(100);
+        ConsumableItem cons = null;
+        if (num < 70) {
+            cons = getConsumableItem(consumables.get(ConsumableItemTier.LOW));
+        } else if (num >= 70 && num < 90) {
+            cons = getConsumableItem(consumables.get(ConsumableItemTier.MID));
+        } else if (num >= 90 && num <= 100) {
+            cons = getConsumableItem(consumables.get(ConsumableItemTier.HIGH));
+        }
+
+        System.out.println(enemy.getName() + " dropped" + cons.getName());
+        System.out.println(cons.getName() + " is added in your consumables inventory");
+        inventoryService.addItemToInventory(cons);
+    }
+
+    /**
+     * Returns a random Consumable item
+     * @param items
+     * @return
+     */
+    private ConsumableItem getConsumableItem(ArrayList<ConsumableItem> items) {
+        int index = rand.nextInt(items.size() - 1 );
+        return items.get(index);
     }
 
     @Override
@@ -177,9 +226,9 @@ public class Castlevania implements Cartridge {
 
         // Hero of the game
         hero = new Hero.Builder("Alucard")
-                .health(10)
-                .damage(1)
-                .lifesteal(20)
+                .health(1000)
+                .damage(100)
+                .lifesteal(25)
                 .criticalChance(5)
                 .evasion(0)
                 .skill(soulSteal)
@@ -340,63 +389,63 @@ public class Castlevania implements Cartridge {
 
         // Consumable item setup
         ConsumableItem lowTierEvasionBoost = new ConsumableItem.Builder("Lesser Evasion Potion")
-                .tier(1)
+                .tier(ConsumableItemTier.LOW)
                 .evasion(2)
                 .build();
         ConsumableItem lowTierLifestealBoost = new ConsumableItem.Builder("Lesser Lifesteal Potion")
-                .tier(1)
+                .tier(ConsumableItemTier.LOW)
                 .lifesteal(2)
                 .build();
         ConsumableItem lowTiereCriticalBoost = new ConsumableItem.Builder("Lesser Critical Chance Potion")
-                .tier(1)
+                .tier(ConsumableItemTier.LOW)
                 .criticalChance(2)
                 .build();
         ConsumableItem lowTierDamageBoost = new ConsumableItem.Builder("Lesser Damage Boost")
-                .tier(1)
+                .tier(ConsumableItemTier.LOW)
                 .damage(5)
                 .build();
         ConsumableItem lowTierHealthBoost = new ConsumableItem.Builder("Lesser Health Boost")
-                .tier(1)
+                .tier(ConsumableItemTier.LOW)
                 .health(20)
                 .build();
         ConsumableItem midTierEvasionBoost = new ConsumableItem.Builder("Evasion Potion")
-                .tier(2)
+                .tier(ConsumableItemTier.MID)
                 .evasion(5)
                 .build();
         ConsumableItem midTierLifestealBoost = new ConsumableItem.Builder("Lifesteal Potion")
-                .tier(2)
+                .tier(ConsumableItemTier.MID)
                 .lifesteal(5)
                 .build();
         ConsumableItem midTiereCriticalBoost = new ConsumableItem.Builder("Critical Chance Potion")
-                .tier(2)
+                .tier(ConsumableItemTier.MID)
                 .criticalChance(5)
                 .build();
         ConsumableItem midTierDamageBoost = new ConsumableItem.Builder("Damage Boost")
-                .tier(2)
+                .tier(ConsumableItemTier.MID)
                 .damage(12)
                 .build();
         ConsumableItem midTierHealthBoost = new ConsumableItem.Builder("Health Boost")
-                .tier(2)
+                .tier(ConsumableItemTier.MID)
                 .health(50)
                 .build();
         ConsumableItem highTierEvasionBoost = new ConsumableItem.Builder("Higher Evasion Potion")
-                .tier(3)
+                .tier(ConsumableItemTier.HIGH)
                 .evasion(10)
                 .build();
         ConsumableItem highTierLifestealBoost = new ConsumableItem.Builder("Higher Lifesteal Potion")
-                .tier(3)
+                .tier(ConsumableItemTier.HIGH)
                 .lifesteal(10)
                 .build();
         ConsumableItem highTiereCriticalBoost = new ConsumableItem.Builder("Higher Critical Chance Potion")
-                .tier(3)
+                .tier(ConsumableItemTier.HIGH)
                 .criticalChance(10)
                 .build();
         ConsumableItem highTierDamageBoost = new ConsumableItem.Builder("Higher Damage Boost")
-                .tier(3)
+                .tier(ConsumableItemTier.HIGH)
                 .damage(30)
                 .build();
         ConsumableItem highTierHealthBoost = new ConsumableItem.Builder("Higher Health Boost")
-                .tier(3)
+                .tier(ConsumableItemTier.HIGH)
                 .health(99)
                 .build();
 
@@ -520,5 +569,30 @@ public class Castlevania implements Cartridge {
 
         //Sets the second location after the first phase is complete
         secondLocation = masterBedroom_2;
+
+        ArrayList<ConsumableItem> lowTierConsumables = new ArrayList<>();
+        lowTierConsumables.add(lowTierDamageBoost);
+        lowTierConsumables.add(lowTiereCriticalBoost);
+        lowTierConsumables.add(lowTierEvasionBoost);
+        lowTierConsumables.add(lowTierHealthBoost);
+        lowTierConsumables.add(lowTierLifestealBoost);
+
+        ArrayList<ConsumableItem> midTierConsumables = new ArrayList<>();
+        midTierConsumables.add(midTierDamageBoost);
+        midTierConsumables.add(midTiereCriticalBoost);
+        midTierConsumables.add(midTierEvasionBoost);
+        midTierConsumables.add(midTierHealthBoost);
+        midTierConsumables.add(midTierLifestealBoost);
+
+        ArrayList<ConsumableItem> highTierConsumables = new ArrayList<>();
+        highTierConsumables.add(highTierDamageBoost);
+        highTierConsumables.add(highTiereCriticalBoost);
+        highTierConsumables.add(highTierEvasionBoost);
+        highTierConsumables.add(highTierHealthBoost);
+        highTierConsumables.add(highTierLifestealBoost);
+
+        consumables.put(ConsumableItemTier.LOW, lowTierConsumables);
+        consumables.put(ConsumableItemTier.MID, midTierConsumables);
+        consumables.put(ConsumableItemTier.HIGH, highTierConsumables);
     }
 }

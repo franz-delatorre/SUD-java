@@ -21,6 +21,10 @@ public class Health {
         maxHealth += healthValue;
     }
 
+    public void decreaseMaxHealth(int healthValue) {
+        maxHealth -= healthValue;
+    }
+
     public int getMaxHealth() {
         return maxHealth;
     }

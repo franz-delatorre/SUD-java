@@ -1,7 +1,7 @@
 package com.franz.sud.java.game.platform.components;
 
 public abstract class Stats {
-    private String name;
+    protected String name;
     protected int statValue;
 
     public Stats(int statValue) {

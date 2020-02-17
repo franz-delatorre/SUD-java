@@ -1,13 +1,11 @@
 package com.franz.sud.java.game.cartridge.castlevania.elements.item;
 
-import com.franz.sud.java.game.cartridge.castlevania.elements.unit.Hero;
-import com.franz.sud.java.game.cartridge.castlevania.helper.StatHelper;
-
 public class EquippableItem extends AttributedItem {
     private boolean isEquipped;
     private EquipmentType equipmentType;
     private boolean isPickedUp;
 
+    // Builder Class
     public static class Builder extends AttributedItem.Builder<Builder> {
         private EquipmentType equipmentType;
 
@@ -36,24 +34,6 @@ public class EquippableItem extends AttributedItem {
         isEquipped = false;
         equipmentType = builder.equipmentType;
         isPickedUp = false;
-    }
-
-    public void useItem(Hero hero) {
-        StatHelper.increaseStats(hero.getUnitStats(), itemStats);
-        isEquipped = true;
-    }
-
-    public void unequip(Hero hero) {
-        StatHelper.decreaseStats(hero.getUnitStats(), itemStats);
-        isEquipped = false;
-    }
-
-    public void setPickedUp() {
-        isPickedUp = true;
-    }
-
-    public boolean isPickedUp() {
-        return isPickedUp;
     }
 
     public EquipmentType getEquipmentType() {

@@ -16,6 +16,9 @@ public class GameProgress {
         progressRooms.add(openRooms);
     }
 
+    /**
+     * @return all the rooms for the current progress index
+     */
     public ArrayList<Room> getCurrentProgressRooms() {
         return progress < progressRooms.size() ? progressRooms.get(progress) : null;
     }

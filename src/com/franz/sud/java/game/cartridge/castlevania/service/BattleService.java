@@ -1,10 +1,12 @@
 package com.franz.sud.java.game.cartridge.castlevania.service;
 
 import com.franz.sud.java.game.cartridge.castlevania.elements.skill.StatBoostSkill;
+import com.franz.sud.java.game.cartridge.castlevania.elements.stats.LifeSteal;
 import com.franz.sud.java.game.cartridge.castlevania.elements.stats.StatType;
 import com.franz.sud.java.game.cartridge.castlevania.elements.unit.*;
 import com.franz.sud.java.game.misc.IO;
 import com.franz.sud.java.game.platform.components.Skill;
+import com.franz.sud.java.game.platform.components.Stats;
 
 import java.util.HashMap;
 
@@ -20,6 +22,13 @@ public class BattleService {
         this.hero = hero;
     }
 
+    /**
+     * Enables the unit to mimic a battle. Player and computer will take turns
+     * in doing action during the battle. If one of the units currentHealth reaches to 0 the
+     * battle will end.
+     *
+     * @return 1 if the player wins, and 0 if otherwise.
+     */
     public int simulateBattle(Enemy battleEnemy) {
         this.enemy = battleEnemy;
         hero.currentHealthToMax();
@@ -51,6 +60,11 @@ public class BattleService {
         return 1;
     }
 
+    /**
+     * Enables the enemy to do an attack to the player. SkilledEnemy instances will use
+     * their skill if the cooldown is <= 0 and do a normal attack if the attack is still
+     * on cooldown. If the enemy does not have a skill it will only do a normal attack.
+     */
     private void enemyAI() {
         if (enemy instanceof UseSkill) {
             UseSkill ee = (UseSkill) enemy;
@@ -63,6 +77,9 @@ public class BattleService {
         normalAttack(enemy, hero);
     }
 
+    /**
+     * Gets the user's input during the battle.
+     */
     private void getUserInput() {
         input.clear();
         System.out.println("Your turn.");
@@ -82,12 +99,24 @@ public class BattleService {
         }
     }
 
+    /**
+     * Invokes the skill of the user.
+     * @param user
+     * @param victim
+     */
     private void useSkill(UseSkill user, GameUnit victim) {
-
         user.useSkill(victim);
         user.setCooldown(4);
     }
 
+    /**
+     * Basic attack of the game. If the victim's canEvade is true, it will not do any
+     * damage. If the attacker canEvade is true it will do a double damage attack.
+     * If the lifesteal of the attacker is > 0, the attacker will replenish its current
+     * health based on the percentage of the damage dealth.
+     * @param attacker
+     * @param victim
+     */
     private void normalAttack(GameUnit attacker, GameUnit victim) {
         IO.printAttack(attacker);
 
@@ -109,17 +138,24 @@ public class BattleService {
 
         if (!attacker.canLifesteal()) return;
 
-        int lsRate = attacker.getStat(StatType.LIFESTEAL).getStatValue();
-        int lifesteal = (int) (damage * (lsRate / 100.0f));
+        LifeSteal ls = (LifeSteal) attacker.getStat(StatType.LIFESTEAL);
 
-        attacker.heal(lifesteal);
-        IO.printLifesteal(lifesteal);
+        ls.setHealth(attacker.getHealth());
+        ls.setDamage(damage);
+        ls.statEffect();
     }
 
+    /**
+     * Checks if both fighter's current health is > 0
+     * @return
+     */
     private boolean fightersStillAlive() {
         return hero.isAlive() && enemy.isAlive();
     }
 
+    /**
+     * Sets the cooldown of both fighters to 3 before battle battle
+     */
     private void setCooldown() {
         hero.getSkill().setCooldown(3);
         if (enemy instanceof SkilledEnemy){
@@ -127,6 +163,10 @@ public class BattleService {
         }
     }
 
+    /**
+     * Gets the winner
+     * @return
+     */
     private GameUnit winner() {
         IO.printWinner(hero, enemy);
         if (hero.isAlive()) {
@@ -135,6 +175,9 @@ public class BattleService {
         return enemy;
     }
 
+    /**
+     * Decrements the cooldown of both fighters after each turn
+     */
     private void decrementCooldown() {
         Skill heroSkill = hero.getSkill();
         heroSkill.decrementCooldown();
@@ -144,6 +187,10 @@ public class BattleService {
         }
     }
 
+    /**
+     * Decrements Boost skills duration. If duration is == 0 the
+     * user will have an after effect and decrease its stats.
+     */
     private void decrementBoost() {
         if (enemy instanceof SkilledEnemy) {
             Skill skill = ((SkilledEnemy) enemy).getSkill();

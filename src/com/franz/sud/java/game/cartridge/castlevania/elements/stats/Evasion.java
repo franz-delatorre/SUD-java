@@ -8,6 +8,7 @@ public class Evasion extends Stats {
 
     public Evasion(int statValue) {
         super(statValue);
+        name = "Evasion";
     }
 
     public boolean hasEvaded() {
@@ -15,6 +16,9 @@ public class Evasion extends Stats {
         return evaded;
     }
 
+    /**
+     * Sets evaded to true if the victim can evade the current attack.
+     */
     @Override
     protected void statEffect() {
         evaded = StatHelper.statEffectSuccessful(statValue);

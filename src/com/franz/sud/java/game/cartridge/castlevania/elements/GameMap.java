@@ -17,6 +17,11 @@ public class GameMap {
         heroPreviousLocation = hero.getCurrentLocation();
     }
 
+    /**
+     * Sets the openRooms for the current map. This is used during the
+     * progression of the game.
+     * @param openRooms
+     */
     public void setOpenRooms(ArrayList<Room> openRooms) {
         this.openRooms = openRooms;
     }
@@ -33,6 +38,10 @@ public class GameMap {
         heroPreviousLocation = rm;
     }
 
+    /**
+     * Shows the graphical location of the hero. Also shows the rooms
+     * available in the game.
+     */
     public void showMap() {
         // Index 0 for min range and index 1 for max range
         int[] xRange = {0, 0};
@@ -113,6 +122,9 @@ public class GameMap {
         return openRooms.contains(adjRm);
     }
 
+    /**
+     * Sets the hero's location equal to the previous location.
+     */
     public void retractHeroLocation() {
         setHeroLocation(heroPreviousLocation);
     }
