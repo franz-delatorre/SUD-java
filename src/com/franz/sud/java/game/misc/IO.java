@@ -17,6 +17,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
+import static com.franz.sud.java.game.misc.Sleep.sleep;
+import static com.franz.sud.java.game.misc.TextColor.ANSI_RESET;
+import static com.franz.sud.java.game.misc.TextColor.ANSI_PURPLE;
+import static com.franz.sud.java.game.misc.TextColor.ANSI_GREEN;
+import static com.franz.sud.java.game.misc.TextColor.ANSI_RED;
+import static com.franz.sud.java.game.misc.TextColor.ANSI_CYAN;
+import static com.franz.sud.java.game.misc.TextColor.ANSI_BLUE;
+import static com.franz.sud.java.game.misc.TextColor.ANSI_BLACK;
+
 public final class IO {
 
     public static String userInput(HashMap<String, String> option) {
@@ -39,51 +48,69 @@ public final class IO {
 
     public static void printFightersHealth(GameUnit hero, GameUnit enemy) {
         System.out.println();
+        sleep(1);
+        System.out.println();
         System.out.println(hero.getName() + " \t\t\t\t"+ enemy.getName());
         System.out.print(hero.getCurrentHealth() + "/" + hero.getMaxHealth());
         System.out.println("\t\t\t\t\t" + enemy.getCurrentHealth() + "/" + enemy.getMaxHealth());
     }
 
     public static void printAttack(Unit unit) {
-        System.out.println(unit.getName() + " used normal attack.");
+        System.out.println();
+        sleep(1);
+        System.out.println(ANSI_RESET + unit.getName() + " used normal attack." + ANSI_BLACK);
     }
 
     public static void printCrit() {
-        System.out.println("Critical HIT");
+        System.out.println();
+        sleep(1);
+        System.out.println(ANSI_PURPLE + "Critical HIT" + ANSI_BLACK);
     }
 
     public static void printEvade(Unit unit) {
-        System.out.println(unit.getName() + " evaded the attack");
+        System.out.println();
+        sleep(1);
+        System.out.println(ANSI_PURPLE + unit.getName() + " evaded the attack" + ANSI_BLACK);
     }
 
     public static void printLifesteal(int ls) {
-        System.out.println(ls + " lifesteal");
+        System.out.println();
+        sleep(1);
+        System.out.println(ANSI_PURPLE + ls + " lifesteal" + ANSI_BLACK);
     }
 
     public static void printDamage(int damage) {
-        System.out.println(damage + " damage");
+        System.out.println();
+        sleep(1);
+        System.out.println(ANSI_RED + damage + " damage" + ANSI_BLACK);
     }
 
     public static void printStatBoost(GameStats stats) {
+        System.out.println();
         for (StatType statType : StatType.values()) {
             Stats s = stats.getStat(statType);
             if (s.getStatValue() > 0) {
-                System.out.println("+ " + s.getStatValue() + statType.toString());
+                sleep(1);
+                System.out.println(ANSI_BLUE + "+ " + s.getStatValue() + statType.toString() + ANSI_BLACK);
             }
         }
     }
 
     public static void printWinner(Unit hero, Unit enemy) {
+        System.out.println();
+        sleep(1);
         if (hero.getHealth().getCurrentHealth() > 0) {
-            System.out.println("You have slain " + enemy.getName());
+            System.out.println(ANSI_GREEN + "You have slain " + enemy.getName() + ANSI_BLACK);
             return;
         }
 
-        System.out.println("You have been slain by " + enemy.getName());
+        System.out.println(ANSI_RED + "You have been slain by " + enemy.getName() + ANSI_BLACK);
     }
 
     public static void printHeal(int heal) {
-        System.out.println("+ " + heal + " health");
+        System.out.println();
+        sleep(1);
+        System.out.println(ANSI_GREEN + "+ " + heal + " health" + ANSI_BLACK);
     }
 
     public static void printSkillCooldown(Skill skill, GameUnit enemy) {
@@ -96,6 +123,8 @@ public final class IO {
 
     public static <T extends AttributedItem> void showInventory(ArrayList<T> items) {
         int index = 1;
+        System.out.println();
+        sleep(1);
         if (items.get(0) instanceof ConsumableItem) System.out.println("Name\t\t\tAmount:");
         for (Item item : items) {
             if (item instanceof ConsumableItem) {
@@ -109,32 +138,47 @@ public final class IO {
     }
 
     public static int getItemIndex(int index) {
+        System.out.println();
+        sleep(1);
         System.out.println("Please select an item number: ");
         Scanner s = new Scanner(System.in);
 
         while (!s.hasNextInt());
         int opt = s.nextInt();
         if (opt < 1 && opt > index) {
-            System.out.println("Index is out of bounds.");
+            System.out.println();
+            sleep(1);
+            System.out.println(ANSI_RED + "Index is out of bounds." + ANSI_BLACK);
             getItemIndex(index);
         }
         return opt;
     }
 
     public static void showItemAttributes(AttributedItem item) {
-        System.out.println(item.getName());
+        System.out.println();
+        sleep(1);
+        System.out.println(ANSI_CYAN + item.getName() + ANSI_BLACK);
         printItemAttributes(item);
     }
 
     public static void printItemAttributes(AttributedItem item) {
-        if (item.getDamage() > 0) System.out.println("+ " + item.getDamage() + " Damage");
-        if (item.getHealth() > 0) System.out.println("+ " + item.getHealth() + " Health");
+        sleep(1);
+        if (item.getDamage() > 0) {
+            sleep(1);
+            System.out.println(ANSI_GREEN + "+ " + item.getDamage() + " Damage" + ANSI_BLACK);
+        }
+        if (item.getHealth() > 0) {
+            sleep(1);
+            System.out.println(ANSI_GREEN + "+ " + item.getHealth() + " Health" + ANSI_BLACK);
+        }
 
         GameStats stats = item.getItemStats();
         for (StatType statType : StatType.values()) {
             Stats s = stats.getStat(statType);
-            if (s.getStatValue() > 0)
-                System.out.println("+ " + s.getStatValue() + " " + s.getName());
+            if (s.getStatValue() > 0) {
+                sleep(1);
+                System.out.println(ANSI_GREEN + "+ " + s.getStatValue() + " " + s.getName() + ANSI_BLACK);
+            }
         }
     }
 
@@ -142,8 +186,10 @@ public final class IO {
         boolean exitLoop = false;
         String s = null;
 
+        System.out.println("You found an item, pick it up?");
         do {
         System.out.println();
+        sleep(1);
         System.out.println("[Y] Yes");
         System.out.println("[N] No");
 
@@ -151,25 +197,37 @@ public final class IO {
         while (!sc.hasNextLine());
         s = sc.nextLine().toLowerCase();
             if (s.equals("y") || s.equals("n")) exitLoop = true;
-            System.out.println("Invalid input");
+            System.out.println(ANSI_RED + "Invalid input" + ANSI_BLACK);
         } while (!exitLoop);
         return s;
     }
 
     public static void showCharacter(Hero hero) {
+        System.out.println();
+        sleep(1);
         System.out.println(hero.getName());
-        System.out.println("Skill:" + hero.getSkill().getName());
+        System.out.println(ANSI_RESET + "Skill:" + hero.getSkill().getName());
         System.out.println("Health: " + hero.getMaxHealth());
 
         int minDamage = hero.getMinDamage();
-        System.out.println("Damage: " + minDamage + "-" + hero.getDamage());
+        System.out.println("Damage: " + minDamage + "-" + hero.getDamage() + ANSI_BLACK);
 
         for (StatType statType : StatType.values()) {
-            System.out.println(statType.toString() + ": " + hero.getStat(statType).getStatValue());
+            System.out.println(ANSI_CYAN + statType.toString() + ": " + hero.getStat(statType).getStatValue() + ANSI_BLACK);
         }
     }
 
     public static void itemAlreadyEquipped() {
-        System.out.println("Item is already equipped!");
+        System.out.println();
+        sleep(1);
+        System.out.println(ANSI_RED + "Item is already equipped!" + ANSI_BLACK);
+    }
+
+    public static void printNarrative(String[] strings) {
+        System.out.println();
+        for (String string : strings) {
+            sleep(2);
+            System.out.println(ANSI_BLUE + string + ANSI_BLACK);
+        }
     }
 }

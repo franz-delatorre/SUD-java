@@ -24,7 +24,7 @@ public class MapService {
 
     /**
      * Will move the character around the map. Users cannot move to the adjacent room if
-     * it is not listed in the open rooms of the current map used.
+     * it is not listed in the open rooms.
      */
     public int mapMenu() {
         boolean heroMoved = false;
@@ -64,9 +64,9 @@ public class MapService {
     }
 
     /**
-     * Moves the unit to the specified direction. If the room is not avaialble
-     * it will alert the player and requests a new input for another room;
+     * Moves the unit to the specified direction.
      * @param to
+     * @return true if the room is available, false if otherwise.
      */
     private boolean moveTo(Direction to) {
         Room rm = map.getHeroLocation();
@@ -77,10 +77,12 @@ public class MapService {
         }
         else {
             return false;
-//            System.out.println(ANSI_RED + "Wrong input, try again" + ANSI_BLACK);
         }
     }
 
+    /**
+     * Sets the hero's current location to the previous location.
+     */
     public void resetHeroLocation() {
         map.retractHeroLocation();
     }

@@ -7,6 +7,10 @@ import com.franz.sud.java.game.platform.components.Room;
 
 import java.util.ArrayList;
 
+import static com.franz.sud.java.game.misc.TextColor.ANSI_GREEN;
+import static com.franz.sud.java.game.misc.TextColor.ANSI_BLACK;
+import static com.franz.sud.java.game.misc.TextColor.ANSI_RESET;
+
 public class GameMap {
     private ArrayList<Room> openRooms = new ArrayList<>();
     private Room heroPreviousLocation;
@@ -43,6 +47,7 @@ public class GameMap {
      * available in the game.
      */
     public void showMap() {
+        System.out.println();
         // Index 0 for min range and index 1 for max range
         int[] xRange = {0, 0};
         int[] yRange = {0, 0};
@@ -54,7 +59,7 @@ public class GameMap {
             yRange = getAxisRange(yRange, rmPoint.getyAxis());
         }
 
-//        System.out.println(TextColor.ANSI_RESET +  "=================================" + TextColor.ANSI_BLACK);
+        System.out.println(ANSI_RESET +  "=================================" + ANSI_BLACK);
         for (int y = yRange[1]; y >= yRange[0]; y--) {
             for (int x = xRange[0]; x <= xRange[1]; x++) {
 
@@ -65,7 +70,7 @@ public class GameMap {
                     //Checks if the hero is at the current specified point
                     if (heroPoints.getyAxis() == y && heroPoints.getxAxis() == x) {
 //                        System.out.printf(TextColor.ANSI_GREEN + "[ * ]" + TextColor.ANSI_BLACK);
-                        System.out.printf("[ * ]");
+                        System.out.printf("[ " + ANSI_GREEN + "*" + ANSI_BLACK + " ]");
                     } else {
                         System.out.printf("[   ]");
                     }
@@ -75,9 +80,9 @@ public class GameMap {
             }
             System.out.println("\n");
         }
-        System.out.println(hero.getCurrentLocation().getName());
-//        System.out.println("      == "+ TextColor.ANSI_GREEN + heroLocation.getName() + TextColor.ANSI_BLACK + " ==      ");
-//        System.out.println(TextColor.ANSI_RESET +  "=================================" + TextColor.ANSI_BLACK);
+
+        System.out.println("      == "+ ANSI_RESET + hero.getCurrentLocation().getName() + ANSI_BLACK + " ==      ");
+        System.out.println(ANSI_RESET +  "=================================" + ANSI_BLACK);
     }
 
     /**

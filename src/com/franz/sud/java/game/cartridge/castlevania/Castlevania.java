@@ -4,6 +4,7 @@ import com.franz.sud.java.game.cartridge.Cartridge;
 import com.franz.sud.java.game.cartridge.castlevania.elements.GameMap;
 import com.franz.sud.java.game.cartridge.castlevania.elements.GameProgress;
 import com.franz.sud.java.game.cartridge.castlevania.elements.item.*;
+import com.franz.sud.java.game.cartridge.castlevania.elements.narrative.Narrative;
 import com.franz.sud.java.game.cartridge.castlevania.elements.skill.*;
 import com.franz.sud.java.game.cartridge.castlevania.elements.unit.Enemy;
 import com.franz.sud.java.game.cartridge.castlevania.elements.unit.Hero;
@@ -17,10 +18,7 @@ import com.franz.sud.java.game.misc.IO;
 import com.franz.sud.java.game.platform.components.Point;
 import com.franz.sud.java.game.platform.components.Room;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 public class Castlevania implements Cartridge {
     private final static HashMap<String, String> input = new HashMap<>();
@@ -37,6 +35,7 @@ public class Castlevania implements Cartridge {
     private GameProgress progress = new GameProgress();
     private String name;
     private EnumMap<ConsumableItemTier, ArrayList<ConsumableItem>> consumables = new EnumMap<>(ConsumableItemTier.class);
+    private Map<Room, Narrative> narrativeList = new HashMap<>();
 
     public Castlevania() {
         name = "Castlevania";
@@ -54,7 +53,8 @@ public class Castlevania implements Cartridge {
     }
 
     /**
-     * Commences the game
+     * Commences the game. Loop will end if the player exits the game or
+     * kills the finalBoss.
      */
     @Override
     public void start() {
@@ -99,23 +99,38 @@ public class Castlevania implements Cartridge {
                 IO.showCharacter(hero);
                 break;
             case "m":
-                int stillInMapMenu;
-                do {
-                    stillInMapMenu = mapService.mapMenu();
-                    checkRoomForEnemy();
-                    if (!finalBoss.isAlive()) {
-                        gameOver = true;
-                        return;
-                    }
-                    checkRoomForItem();
-                    checkProgress();
-                } while (stillInMapMenu < 1);
+                mapMenu();
                 mainMenu();
                 break;
             case "q":
                 gameOver = true;
                 break;
         }
+    }
+
+    private void mapMenu() {
+        int stillInMapMenu;
+        do {
+            getNarrative(0);
+            stillInMapMenu = mapService.mapMenu();
+            getNarrative(0);
+            checkRoomForEnemy();
+            if (!finalBoss.isAlive()) {
+                gameOver = true;
+                return;
+            }
+            checkRoomForItem();
+            getNarrative(1);
+            checkProgress();
+        } while (stillInMapMenu < 1);
+    }
+
+    private void getNarrative(int index) {
+        Room currRoom = hero.getCurrentLocation();
+        Narrative gm = narrativeList.get(currRoom);
+        if (gm.isNarrated()) return;
+        IO.printNarrative(gm.getNarrative(index));
+
     }
 
     /**
@@ -129,7 +144,6 @@ public class Castlevania implements Cartridge {
 
         AttributedItem item = roomService.getRoomItem(currRoom);
 
-        System.out.println("You found an item, pick it up?");
         IO.showItemAttributes(item);
         switch (IO.pickupItem()) {
             case "y":
@@ -570,6 +584,7 @@ public class Castlevania implements Cartridge {
         //Sets the second location after the first phase is complete
         secondLocation = masterBedroom_2;
 
+        // Setup consumables
         ArrayList<ConsumableItem> lowTierConsumables = new ArrayList<>();
         lowTierConsumables.add(lowTierDamageBoost);
         lowTierConsumables.add(lowTiereCriticalBoost);
@@ -594,5 +609,105 @@ public class Castlevania implements Cartridge {
         consumables.put(ConsumableItemTier.LOW, lowTierConsumables);
         consumables.put(ConsumableItemTier.MID, midTierConsumables);
         consumables.put(ConsumableItemTier.HIGH, highTierConsumables);
+
+        // Sets the String array of each progress/room.
+        String[] emptyNarrative = new String[] {};
+
+        String[] introduction = new String[] {
+                "Welcome to Castlevania.",
+                "I am Elmo the NPC",
+                "Are you here to slay Count Dracula?",
+                "But before that you first must defeat his army of evil"
+        };
+
+        String[] instructions = new String[] {
+                "To move around the map press [M]",
+                "Then select the location you want to go. [W = up, A = left, S = down, D = right]"
+        };
+
+        String[] foundAnItem = new String[] {
+                "You found an item!",
+                "Items found will go directly to you inventory. Press [I] to open your inventory",
+                "Don't forget to inspect your item [I] and equip it to help you on your quest [U]",
+                "But first, we must exit the map press [E]"
+        };
+
+        String[] enemyFound = new String[] {
+                "Watch out! There's a banshee waiting for you at the corner",
+                "Prepare for battle buddy and best of luck."
+        };
+
+        String[] enemySlain = new String[] {
+                "Good job buddy! you killed the banshee!",
+                "Look, she dropped an item! It's an amulet! You'll look good if you wear it."
+        };
+
+        String[] bossFound = new String[] {
+                "To arms! Beyond this door is Medusa!",
+                "Defeat the level boss and you'll open new rooms in the map",
+                "Goodluck!!!"
+        };
+
+        String[] firstBossKill = new String[] {
+                "Great! You killed the boss Medusa!",
+                "Hold on the ground is shaking!!! ",
+                ".............",
+                "It looks like the castle is changing or something",
+                "Hmmmmmmm"
+        };
+
+        String[] tierOneBossKill = new String[] {
+                "Whoooooa!! It's shaking again!! Hold tight!",
+                "..................",
+                ".................."
+        };
+
+        String[] castleChange = new String[] {
+                "Whoaaaa! I think the castle changed again.",
+                "This time we are upside down!!",
+        };
+
+        String[] draculaRoom = new String[] {
+                "I could feel Dracula's presence beyond this room",
+                "Prepare yourself for the greatest battle of your life"
+        };
+
+        // Creates instances of Narrative
+        Narrative hallwayOneNarrative = new Narrative();
+        Narrative hallwayTwoNarrative = new Narrative();
+        Narrative livingRoomNarrative = new Narrative();
+        Narrative servantsNarrative = new Narrative();
+        Narrative masterNarrative = new Narrative();
+        Narrative masterNarrative_2 = new Narrative();
+        Narrative hallwayOneNarrative_2 = new Narrative();
+
+        // Adds the String arrays to their corresponding narrative
+        hallwayOneNarrative.addNarrative(introduction);
+        hallwayOneNarrative.addNarrative(instructions);
+
+        hallwayTwoNarrative.addNarrative(emptyNarrative);
+        hallwayTwoNarrative.addNarrative(foundAnItem);
+
+        livingRoomNarrative.addNarrative(enemyFound);
+        livingRoomNarrative.addNarrative(enemySlain);
+
+        servantsNarrative.addNarrative(bossFound);
+        servantsNarrative.addNarrative(firstBossKill);
+
+        masterNarrative.addNarrative(emptyNarrative);
+        masterNarrative.addNarrative(tierOneBossKill);
+
+        masterNarrative_2.addNarrative(castleChange);
+
+        hallwayOneNarrative_2.addNarrative(draculaRoom);
+
+        // Setup the narrative list in a hashmap
+        narrativeList.put(hallwayOne, hallwayOneNarrative);
+        narrativeList.put(hallwayTwo, hallwayTwoNarrative);
+        narrativeList.put(livingRoom, hallwayTwoNarrative);
+        narrativeList.put(servantQuarters, servantsNarrative);
+        narrativeList.put(masterBedroom, masterNarrative);
+        narrativeList.put(masterBedroom_2, masterNarrative_2);
+        narrativeList.put(hallwayOne_2, hallwayOneNarrative_2);
     }
 }
